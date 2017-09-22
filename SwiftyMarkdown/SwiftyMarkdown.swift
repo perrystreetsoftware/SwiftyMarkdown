@@ -168,6 +168,20 @@ enum LineStyle : Int {
 		code.fontName = name
 		link.fontName = name
 	}
+
+    // SCRUFF Addition
+    @objc(setGlobalColorWithColor:)
+    open func setGlobalColor(_ color: UIColor) {
+        h1.color = color
+        h2.color = color
+        h3.color = color
+        h4.color = color
+        h5.color = color
+        h6.color = color
+        body.color = color
+        bold.color = color
+        italic.color = color
+    }
 	
 	/**
 	Generates an NSAttributedString from the string or URL passed at initialisation. Custom fonts or styles are applied to the appropriate elements when this method is called.
@@ -177,7 +191,18 @@ enum LineStyle : Int {
 	open func attributedString() -> NSAttributedString {
 		let attributedString = NSMutableAttributedString(string: "")
 		
-		let lines = self.string.components(separatedBy: CharacterSet.newlines)
+        // all newlines should be the same (\n) not (\r\n)
+        let regexWindowsNewline = try! NSRegularExpression(pattern: "\r\n", options: NSRegularExpression.Options.caseInsensitive)
+        var range = NSMakeRange(0, self.string.characters.count)
+        var string = regexWindowsNewline.stringByReplacingMatches(in: self.string, options: [], range: range, withTemplate: "\n")
+
+        // markdown interprets two or more newlines as a paragraph break
+        // -> allow maximum of two consecutive newlines
+        let regexTooManyNewlines = try! NSRegularExpression(pattern: "\n *\n( *\n *)+", options: NSRegularExpression.Options.caseInsensitive)
+        range = NSMakeRange(0, string.characters.count)
+        string = regexTooManyNewlines.stringByReplacingMatches(in: string, options: [], range: range, withTemplate: "\n\n")
+
+        let lines = string.components(separatedBy: CharacterSet.newlines)
 		
 		var lineCount = 0
 		
@@ -256,10 +281,9 @@ enum LineStyle : Int {
 							
 							let matchedCharacters = tagFromScanner(scanner).foundCharacters
 							// If the next string after the characters is a space, then add it to the final string and continue
-							
-							let set = NSMutableCharacterSet.whitespace()
-							set.formUnion(with: CharacterSet.punctuationCharacters)
-							if scanner.scanUpToCharacters(from: set as CharacterSet, into: nil) {
+
+                            // matched characters holds the markdown markup characters, e.g.: ** for bolding and we are looking for the matching closing markdown now
+                            if scanner.scanUpTo(matchedCharacters, into: nil) {
 								scanner.scanLocation = location
 								attributedString.append(self.attributedStringFromScanner(scanner))
 								
@@ -280,9 +304,8 @@ enum LineStyle : Int {
 			}
 			
 			// Append a new line character to the end of the processed line
-			if lineCount < lines.count {
-				attributedString.append(NSAttributedString(string: "\n"))
-			}
+            attributedString.append(NSAttributedString(string: "\n"))
+
 			currentType = .body
 		}
 		
@@ -399,7 +422,7 @@ enum LineStyle : Int {
 			fontName = h3.fontName
 			fontSize = h3.fontSize
 			if #available(iOS 9, *) {
-				textStyle = UIFontTextStyle.title2
+				textStyle = UIFontTextStyle.title3
 			} else {
 				textStyle = UIFontTextStyle.subheadline
 			}
