@@ -103,7 +103,7 @@ enum LineStyle : Int {
 	
 	- returns: An initialized SwiftyMarkdown object
 	*/
-	public init(string : String ) {
+	@objc public init(string : String ) {
 		self.string = string
 	}
 	
@@ -188,6 +188,7 @@ enum LineStyle : Int {
 	
 	- returns: An NSAttributedString with the styles applied
 	*/
+    @objc
 	open func attributedString() -> NSAttributedString {
 		let attributedString = NSMutableAttributedString(string: "")
 		
