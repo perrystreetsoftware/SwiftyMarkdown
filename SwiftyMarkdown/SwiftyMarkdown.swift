@@ -194,13 +194,13 @@ enum LineStyle : Int {
 		
         // all newlines should be the same (\n) not (\r\n)
         let regexWindowsNewline = try! NSRegularExpression(pattern: "\r\n", options: NSRegularExpression.Options.caseInsensitive)
-        var range = NSMakeRange(0, self.string.characters.count)
+        var range = NSMakeRange(0, self.string.count)
         var string = regexWindowsNewline.stringByReplacingMatches(in: self.string, options: [], range: range, withTemplate: "\n")
 
         // markdown interprets two or more newlines as a paragraph break
         // -> allow maximum of two consecutive newlines
         let regexTooManyNewlines = try! NSRegularExpression(pattern: "\n *\n( *\n *)+", options: NSRegularExpression.Options.caseInsensitive)
-        range = NSMakeRange(0, string.characters.count)
+        range = NSMakeRange(0, string.count)
         string = regexTooManyNewlines.stringByReplacingMatches(in: string, options: [], range: range, withTemplate: "\n\n")
 
         let lines = string.components(separatedBy: CharacterSet.newlines)
